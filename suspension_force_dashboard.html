@@ -1,0 +1,1308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Matrix-Based Force Distribution | Multi-Link Suspension System</title>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Share+Tech+Mono&family=Exo+2:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg-deep: #050d1a;
+    --bg-panel: #081428;
+    --bg-card: #0c1e38;
+    --bg-surface: #102444;
+    --accent-cyan: #00c8ff;
+    --accent-blue: #1a6bff;
+    --accent-green: #00e5a0;
+    --accent-orange: #ff7043;
+    --accent-yellow: #ffd740;
+    --text-primary: #e8f4fc;
+    --text-secondary: #7aa8cc;
+    --text-muted: #3d6080;
+    --border: #1a3a5c;
+    --border-bright: #1e5080;
+    --glow-cyan: rgba(0, 200, 255, 0.15);
+    --glow-blue: rgba(26, 107, 255, 0.2);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'Exo 2', sans-serif;
+    background: var(--bg-deep);
+    color: var(--text-primary);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Animated grid background */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(0,200,255,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,200,255,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* ─── HEADER ─── */
+  header {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: rgba(5, 13, 26, 0.95);
+    border-bottom: 1px solid var(--border);
+    backdrop-filter: blur(12px);
+    padding: 0 2rem;
+  }
+
+  .header-inner {
+    max-width: 1400px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 64px;
+    gap: 1rem;
+  }
+
+  .logo-block {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .logo-icon {
+    width: 38px; height: 38px;
+    background: linear-gradient(135deg, var(--accent-blue), var(--accent-cyan));
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
+    box-shadow: 0 0 16px var(--glow-cyan);
+    flex-shrink: 0;
+  }
+
+  .logo-text {
+    font-family: 'Rajdhani', sans-serif;
+    font-weight: 700;
+    font-size: 1.1rem;
+    line-height: 1.2;
+    color: var(--text-primary);
+  }
+
+  .logo-sub {
+    font-size: 0.65rem;
+    color: var(--text-secondary);
+    font-weight: 400;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+
+  nav { display: flex; gap: 0.25rem; }
+
+  nav a {
+    font-family: 'Rajdhani', sans-serif;
+    font-weight: 600;
+    font-size: 0.9rem;
+    letter-spacing: 0.5px;
+    color: var(--text-secondary);
+    text-decoration: none;
+    padding: 6px 14px;
+    border-radius: 6px;
+    transition: all 0.2s;
+    border: 1px solid transparent;
+  }
+
+  nav a:hover, nav a.active {
+    color: var(--accent-cyan);
+    border-color: var(--border-bright);
+    background: var(--glow-cyan);
+  }
+
+  .status-pill {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.7rem;
+    color: var(--accent-green);
+    padding: 4px 10px;
+    border: 1px solid rgba(0,229,160,0.3);
+    border-radius: 20px;
+    background: rgba(0,229,160,0.07);
+    white-space: nowrap;
+  }
+
+  .status-dot {
+    width: 6px; height: 6px;
+    background: var(--accent-green);
+    border-radius: 50%;
+    animation: pulse 1.5s infinite;
+  }
+
+  @keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:0.3;} }
+
+  /* ─── HERO ─── */
+  .hero {
+    position: relative;
+    z-index: 1;
+    padding: 4rem 2rem 3rem;
+    max-width: 1400px;
+    margin: 0 auto;
+    text-align: center;
+  }
+
+  .hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.72rem;
+    color: var(--accent-cyan);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    border: 1px solid rgba(0,200,255,0.3);
+    padding: 5px 14px;
+    border-radius: 20px;
+    margin-bottom: 1.25rem;
+    background: rgba(0,200,255,0.05);
+  }
+
+  .hero h1 {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: clamp(1.8rem, 4vw, 3rem);
+    font-weight: 700;
+    line-height: 1.1;
+    max-width: 800px;
+    margin: 0 auto 1rem;
+    background: linear-gradient(135deg, #fff 30%, var(--accent-cyan));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .hero p {
+    color: var(--text-secondary);
+    font-size: 1rem;
+    max-width: 600px;
+    margin: 0 auto;
+    line-height: 1.7;
+  }
+
+  /* ─── LAYOUT ─── */
+  .container {
+    position: relative;
+    z-index: 1;
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 2rem 4rem;
+  }
+
+  .section-label {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.65rem;
+    color: var(--accent-cyan);
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    margin-bottom: 0.5rem;
+  }
+
+  .section-title {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 1.5rem;
+  }
+
+  .card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.5rem;
+    position: relative;
+    overflow: hidden;
+    transition: border-color 0.3s, box-shadow 0.3s;
+  }
+
+  .card:hover {
+    border-color: var(--border-bright);
+    box-shadow: 0 0 24px var(--glow-blue);
+  }
+
+  .card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--accent-blue), transparent);
+    opacity: 0.6;
+  }
+
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem; }
+  .mb { margin-bottom: 1.5rem; }
+
+  /* ─── SUSPENSION DIAGRAM ─── */
+  #system { padding-top: 2rem; }
+
+  .diagram-container {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 2rem;
+    margin-bottom: 1.5rem;
+  }
+
+  svg.suspension-svg {
+    width: 100%;
+    height: auto;
+    display: block;
+  }
+
+  /* ─── FORCE INPUTS ─── */
+  #simulation { padding-top: 2rem; }
+
+  .input-group { margin-bottom: 1.25rem; }
+
+  .input-label {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    font-family: 'Rajdhani', sans-serif;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+  }
+
+  .input-value {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.9rem;
+    color: var(--accent-cyan);
+    background: var(--bg-surface);
+    padding: 2px 8px;
+    border-radius: 4px;
+    border: 1px solid var(--border);
+    min-width: 80px;
+    text-align: center;
+  }
+
+  input[type="range"] {
+    width: 100%;
+    -webkit-appearance: none;
+    height: 4px;
+    background: var(--bg-surface);
+    border-radius: 4px;
+    outline: none;
+    cursor: pointer;
+  }
+
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 16px; height: 16px;
+    border-radius: 50%;
+    background: var(--accent-cyan);
+    box-shadow: 0 0 8px var(--accent-cyan);
+    cursor: pointer;
+    transition: transform 0.2s;
+  }
+
+  input[type="range"]::-webkit-slider-thumb:hover { transform: scale(1.3); }
+
+  .slider-track {
+    position: relative;
+    margin-bottom: 0.25rem;
+  }
+
+  .slider-fill {
+    position: absolute;
+    top: 0; left: 0;
+    height: 4px;
+    border-radius: 4px;
+    pointer-events: none;
+    transition: width 0.1s;
+  }
+
+  .fill-vertical { background: linear-gradient(90deg, var(--accent-blue), var(--accent-cyan)); }
+  .fill-braking  { background: linear-gradient(90deg, #ff3d00, var(--accent-orange)); }
+  .fill-cornering{ background: linear-gradient(90deg, #6200ea, #b04fff); }
+
+  /* ─── MATRIX SECTION ─── */
+  #results { padding-top: 2rem; }
+
+  .formula-display {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 1.2rem;
+    color: var(--accent-cyan);
+    text-align: center;
+    padding: 1rem;
+    background: var(--bg-surface);
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    margin-bottom: 1.25rem;
+    letter-spacing: 2px;
+  }
+
+  .matrix-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+    margin-bottom: 1.5rem;
+  }
+
+  .matrix-label {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--accent-yellow);
+    text-align: center;
+    margin-bottom: 0.3rem;
+  }
+
+  .matrix-box {
+    position: relative;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.78rem;
+    color: var(--text-primary);
+  }
+
+  .matrix-bracket {
+    display: inline-flex;
+    align-items: stretch;
+    gap: 2px;
+  }
+
+  .bracket-left, .bracket-right {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    color: var(--accent-cyan);
+    font-size: 2rem;
+    line-height: 1;
+    padding: 0 2px;
+  }
+
+  .matrix-grid {
+    display: grid;
+    gap: 3px;
+    padding: 6px 4px;
+  }
+
+  .matrix-cell {
+    padding: 3px 8px;
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    text-align: right;
+    min-width: 52px;
+    font-size: 0.72rem;
+    transition: background 0.3s, color 0.3s;
+    color: var(--text-secondary);
+  }
+
+  .matrix-cell.highlight {
+    background: rgba(0,200,255,0.12);
+    color: var(--accent-cyan);
+    border-color: var(--accent-cyan);
+  }
+
+  .op-symbol {
+    font-size: 1.8rem;
+    color: var(--text-muted);
+    padding: 0 0.5rem;
+    align-self: center;
+  }
+
+  /* ─── RESULTS BARS ─── */
+  .results-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+  }
+
+  .result-item {
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1rem;
+    transition: border-color 0.3s;
+  }
+
+  .result-item:hover { border-color: var(--border-bright); }
+
+  .result-name {
+    font-family: 'Rajdhani', sans-serif;
+    font-weight: 700;
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    margin-bottom: 0.6rem;
+    letter-spacing: 0.5px;
+  }
+
+  .result-bar-bg {
+    height: 8px;
+    background: var(--bg-deep);
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: 0.5rem;
+  }
+
+  .result-bar-fill {
+    height: 100%;
+    border-radius: 4px;
+    transition: width 0.6s cubic-bezier(0.4,0,0.2,1);
+    position: relative;
+  }
+
+  .result-bar-fill::after {
+    content: '';
+    position: absolute;
+    right: 0; top: 0; bottom: 0;
+    width: 4px;
+    background: rgba(255,255,255,0.5);
+    border-radius: 4px;
+  }
+
+  .result-value {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .result-num {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--text-primary);
+  }
+
+  .result-pct {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.72rem;
+    color: var(--text-muted);
+  }
+
+  /* ─── RUN BUTTON ─── */
+  .run-btn {
+    display: block;
+    width: 100%;
+    padding: 1rem;
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 1.1rem;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--bg-deep);
+    background: linear-gradient(135deg, var(--accent-cyan), var(--accent-blue));
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s;
+    position: relative;
+    overflow: hidden;
+    margin-top: 1.25rem;
+  }
+
+  .run-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0,200,255,0.35);
+  }
+
+  .run-btn:active { transform: translateY(0); }
+
+  .run-btn::before {
+    content: '';
+    position: absolute;
+    top: -50%; left: -60%;
+    width: 40%; height: 200%;
+    background: rgba(255,255,255,0.25);
+    transform: skewX(-20deg);
+    transition: left 0.4s;
+  }
+
+  .run-btn:hover::before { left: 120%; }
+
+  /* ─── STAT CARDS ─── */
+  .stat-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1.25rem;
+    text-align: center;
+    transition: all 0.3s;
+  }
+
+  .stat-card:hover {
+    border-color: var(--border-bright);
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px var(--glow-blue);
+  }
+
+  .stat-icon {
+    font-size: 1.8rem;
+    margin-bottom: 0.5rem;
+    display: block;
+  }
+
+  .stat-num {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 1.4rem;
+    color: var(--accent-cyan);
+    display: block;
+    margin-bottom: 0.25rem;
+  }
+
+  .stat-desc {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    line-height: 1.4;
+  }
+
+  /* ─── APPLICATIONS ─── */
+  #applications { padding-top: 2rem; }
+
+  .app-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.5rem;
+    transition: all 0.3s;
+    height: 100%;
+  }
+
+  .app-card:hover {
+    border-color: var(--border-bright);
+    transform: translateY(-4px);
+    box-shadow: 0 12px 32px var(--glow-blue);
+  }
+
+  .app-icon {
+    width: 44px; height: 44px;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.4rem;
+    margin-bottom: 1rem;
+  }
+
+  .app-card h3 {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 0.5rem;
+  }
+
+  .app-card p {
+    font-size: 0.83rem;
+    color: var(--text-secondary);
+    line-height: 1.65;
+  }
+
+  /* ─── CONSOLE LOG ─── */
+  .console-log {
+    background: #020810;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1rem;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.72rem;
+    color: var(--accent-green);
+    height: 120px;
+    overflow-y: auto;
+    line-height: 1.8;
+  }
+
+  .log-line { color: var(--text-muted); }
+  .log-line span { color: var(--accent-green); }
+  .log-warn span { color: var(--accent-yellow); }
+  .log-info span { color: var(--accent-cyan); }
+
+  /* ─── FOOTER ─── */
+  footer {
+    position: relative;
+    z-index: 1;
+    background: var(--bg-panel);
+    border-top: 1px solid var(--border);
+    padding: 2.5rem 2rem;
+  }
+
+  .footer-inner {
+    max-width: 1400px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    gap: 2rem;
+  }
+
+  .footer-project h3 {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 0.75rem;
+  }
+
+  .footer-detail {
+    font-size: 0.78rem;
+    color: var(--text-secondary);
+    line-height: 2;
+  }
+
+  .footer-detail strong {
+    color: var(--accent-cyan);
+    font-family: 'Share Tech Mono', monospace;
+    margin-right: 8px;
+  }
+
+  .footer-center {
+    text-align: center;
+    font-size: 0.72rem;
+    color: var(--text-muted);
+    font-family: 'Share Tech Mono', monospace;
+    line-height: 1.8;
+  }
+
+  .footer-right {
+    text-align: right;
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    font-family: 'Share Tech Mono', monospace;
+    line-height: 2;
+  }
+
+  /* ─── DIVIDER ─── */
+  .section-divider {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 3rem 0;
+  }
+
+  /* ─── SIMULATION RUNNING ANIMATION ─── */
+  @keyframes scanline {
+    0% { transform: translateY(-100%); }
+    100% { transform: translateY(100%); }
+  }
+
+  .scanning::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(transparent 40%, rgba(0,200,255,0.08) 50%, transparent 60%);
+    animation: scanline 0.8s linear;
+    pointer-events: none;
+  }
+
+  /* ─── LINK COLOR INDICATORS ─── */
+  .link-color-uca   { background: linear-gradient(90deg, var(--accent-cyan), #0099cc); }
+  .link-color-lca   { background: linear-gradient(90deg, var(--accent-blue), #004fd4); }
+  .link-color-trail { background: linear-gradient(90deg, var(--accent-green), #009966); }
+  .link-color-toe   { background: linear-gradient(90deg, var(--accent-orange), #cc4400); }
+  .link-color-hub   { background: linear-gradient(90deg, var(--accent-yellow), #cc9900); }
+
+  /* ─── RESPONSIVE ─── */
+  @media (max-width: 900px) {
+    .grid-2, .grid-3 { grid-template-columns: 1fr; }
+    .results-grid { grid-template-columns: 1fr; }
+    .footer-inner { grid-template-columns: 1fr; text-align: center; }
+    .footer-right { text-align: center; }
+    nav { display: none; }
+  }
+
+  @media (max-width: 600px) {
+    .matrix-wrapper { flex-direction: column; }
+    .hero { padding: 2rem 1rem; }
+    .container { padding: 0 1rem 3rem; }
+  }
+
+  /* ─── TOOLTIP ─── */
+  [data-tip] { position: relative; cursor: help; }
+  [data-tip]::after {
+    content: attr(data-tip);
+    position: absolute;
+    bottom: calc(100% + 6px);
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--bg-surface);
+    border: 1px solid var(--border-bright);
+    color: var(--text-primary);
+    font-size: 0.72rem;
+    padding: 4px 10px;
+    border-radius: 6px;
+    white-space: nowrap;
+    font-family: 'Share Tech Mono', monospace;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.2s;
+    z-index: 50;
+  }
+  [data-tip]:hover::after { opacity: 1; }
+</style>
+</head>
+<body>
+
+<!-- ═══════════ HEADER ═══════════ -->
+<header id="home">
+  <div class="header-inner">
+    <div class="logo-block">
+      <div class="logo-icon">⚙</div>
+      <div>
+        <div class="logo-text">SuspensionMatrix</div>
+        <div class="logo-sub">Force Analysis System v2.1</div>
+      </div>
+    </div>
+    <nav>
+      <a href="#home" class="active">Home</a>
+      <a href="#system">System</a>
+      <a href="#simulation">Simulation</a>
+      <a href="#results">Results</a>
+      <a href="#applications">Applications</a>
+    </nav>
+    <div class="status-pill">
+      <div class="status-dot"></div>
+      SYS ONLINE
+    </div>
+  </div>
+</header>
+
+<!-- ═══════════ HERO ═══════════ -->
+<div class="hero">
+  <div class="hero-badge">⚡ Micro Project · Mechanical Engineering</div>
+  <h1>Matrix-Based Force Distribution<br>in a Multi-Link Suspension System</h1>
+  <p>Interactive analysis of how external vehicle loads decompose across suspension links using matrix algebra — F = A × T</p>
+</div>
+
+<!-- ═══════════ MAIN CONTENT ═══════════ -->
+<div class="container">
+
+  <!-- STATS ROW -->
+  <div class="grid-3 mb">
+    <div class="stat-card" data-tip="Number of load-bearing links modeled">
+      <span class="stat-icon">🔗</span>
+      <span class="stat-num" id="stat-links">5</span>
+      <span class="stat-desc">Active Suspension Links</span>
+    </div>
+    <div class="stat-card" data-tip="Degrees of freedom analyzed">
+      <span class="stat-icon">📐</span>
+      <span class="stat-num">3-DOF</span>
+      <span class="stat-desc">Force Input Dimensions</span>
+    </div>
+    <div class="stat-card" data-tip="Total resultant force magnitude">
+      <span class="stat-icon">⚡</span>
+      <span class="stat-num" id="stat-total">— N</span>
+      <span class="stat-desc">Resultant Force Magnitude</span>
+    </div>
+  </div>
+
+  <hr class="section-divider">
+
+  <!-- ═══ SYSTEM DIAGRAM ═══ -->
+  <section id="system">
+    <div class="section-label">01 — System Overview</div>
+    <div class="section-title">Multi-Link Suspension Diagram</div>
+
+    <div class="diagram-container">
+      <svg class="suspension-svg" viewBox="0 0 900 440" xmlns="http://www.w3.org/2000/svg">
+        <!-- Background panels -->
+        <rect x="0" y="0" width="900" height="440" fill="#081428" rx="8"/>
+        <!-- Grid lines -->
+        <defs>
+          <pattern id="grid" width="30" height="30" patternUnits="userSpaceOnUse">
+            <path d="M 30 0 L 0 0 0 30" fill="none" stroke="rgba(0,200,255,0.04)" stroke-width="1"/>
+          </pattern>
+          <marker id="arrow-cyan" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+            <path d="M0,0 L8,3 L0,6 Z" fill="#00c8ff"/>
+          </marker>
+          <marker id="arrow-orange" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+            <path d="M0,0 L8,3 L0,6 Z" fill="#ff7043"/>
+          </marker>
+          <marker id="arrow-purple" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+            <path d="M0,0 L8,3 L0,6 Z" fill="#b04fff"/>
+          </marker>
+          <filter id="glow-c">
+            <feGaussianBlur stdDeviation="3" result="blur"/>
+            <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+          </filter>
+        </defs>
+        <rect x="0" y="0" width="900" height="440" fill="url(#grid)" rx="8"/>
+
+        <!-- CHASSIS / BODY -->
+        <rect x="80" y="80" width="460" height="36" rx="6" fill="#102444" stroke="#1e5080" stroke-width="1.5"/>
+        <text x="310" y="103" fill="#7aa8cc" font-size="12" text-anchor="middle" font-family="Share Tech Mono, monospace">VEHICLE CHASSIS / SUBFRAME</text>
+
+        <!-- WHEEL HUB (center element) -->
+        <circle cx="560" cy="260" r="52" fill="none" stroke="#1a3a5c" stroke-width="1.5"/>
+        <circle cx="560" cy="260" r="42" fill="#0c1e38" stroke="#1a6bff" stroke-width="2"/>
+        <circle cx="560" cy="260" r="20" fill="#081428" stroke="#00c8ff" stroke-width="1.5" filter="url(#glow-c)"/>
+        <circle cx="560" cy="260" r="6" fill="#00c8ff"/>
+        <!-- Wheel spokes -->
+        <line x1="560" y1="238" x2="560" y2="218" stroke="#1a6bff" stroke-width="1.5"/>
+        <line x1="560" y1="282" x2="560" y2="302" stroke="#1a6bff" stroke-width="1.5"/>
+        <line x1="538" y1="260" x2="518" y2="260" stroke="#1a6bff" stroke-width="1.5"/>
+        <line x1="582" y1="260" x2="602" y2="260" stroke="#1a6bff" stroke-width="1.5"/>
+        <!-- Hub label -->
+        <text x="560" y="322" fill="#00c8ff" font-size="11" text-anchor="middle" font-family="Share Tech Mono, monospace" filter="url(#glow-c)">WHEEL HUB</text>
+
+        <!-- UPPER CONTROL ARM -->
+        <line x1="200" y1="116" x2="520" y2="218" stroke="#00c8ff" stroke-width="3" stroke-linecap="round" filter="url(#glow-c)"/>
+        <circle cx="200" cy="116" r="7" fill="#00c8ff" opacity="0.9"/>
+        <circle cx="520" cy="218" r="7" fill="#00c8ff" opacity="0.9"/>
+        <!-- UCA label with bg -->
+        <rect x="260" y="130" width="160" height="22" rx="4" fill="rgba(0,200,255,0.12)" stroke="rgba(0,200,255,0.4)" stroke-width="1"/>
+        <text x="340" y="145" fill="#00c8ff" font-size="10.5" text-anchor="middle" font-family="Rajdhani, sans-serif" font-weight="700">Upper Control Arm (UCA)</text>
+
+        <!-- LOWER CONTROL ARM -->
+        <line x1="180" y1="116" x2="515" y2="298" stroke="#1a6bff" stroke-width="3" stroke-linecap="round" filter="url(#glow-c)"/>
+        <circle cx="180" cy="116" r="7" fill="#1a6bff" opacity="0.9"/>
+        <circle cx="515" cy="298" r="7" fill="#1a6bff" opacity="0.9"/>
+        <!-- LCA label -->
+        <rect x="240" y="218" width="160" height="22" rx="4" fill="rgba(26,107,255,0.12)" stroke="rgba(26,107,255,0.4)" stroke-width="1"/>
+        <text x="320" y="233" fill="#6699ff" font-size="10.5" text-anchor="middle" font-family="Rajdhani, sans-serif" font-weight="700">Lower Control Arm (LCA)</text>
+
+        <!-- TRAILING ARM -->
+        <line x1="80" y1="110" x2="520" y2="248" stroke="#00e5a0" stroke-width="2.5" stroke-linecap="round" stroke-dasharray="8,4" filter="url(#glow-c)"/>
+        <circle cx="80" cy="110" r="7" fill="#00e5a0" opacity="0.9"/>
+        <circle cx="520" cy="248" r="7" fill="#00e5a0" opacity="0.9"/>
+        <!-- Trail label -->
+        <rect x="148" y="155" width="150" height="22" rx="4" fill="rgba(0,229,160,0.1)" stroke="rgba(0,229,160,0.4)" stroke-width="1"/>
+        <text x="223" y="170" fill="#00e5a0" font-size="10.5" text-anchor="middle" font-family="Rajdhani, sans-serif" font-weight="700">Trailing Arm (TA)</text>
+
+        <!-- TOE LINK -->
+        <line x1="160" y1="116" x2="522" y2="278" stroke="#ff7043" stroke-width="2.5" stroke-linecap="round" filter="url(#glow-c)"/>
+        <circle cx="160" cy="116" r="7" fill="#ff7043" opacity="0.9"/>
+        <circle cx="522" cy="278" r="7" fill="#ff7043" opacity="0.9"/>
+        <!-- Toe label -->
+        <rect x="255" y="280" width="120" height="22" rx="4" fill="rgba(255,112,67,0.12)" stroke="rgba(255,112,67,0.4)" stroke-width="1"/>
+        <text x="315" y="295" fill="#ff7043" font-size="10.5" text-anchor="middle" font-family="Rajdhani, sans-serif" font-weight="700">Toe Link (TL)</text>
+
+        <!-- SPRING / DAMPER (schematic) -->
+        <line x1="560" y1="116" x2="560" y2="208" stroke="#ffd740" stroke-width="2" stroke-linecap="round"/>
+        <!-- Spring zigzag -->
+        <polyline points="560,130 548,136 572,142 548,148 572,154 548,160 572,166 560,172" fill="none" stroke="#ffd740" stroke-width="2"/>
+        <circle cx="560" cy="116" r="6" fill="#ffd740"/>
+        <text x="578" y="162" fill="#ffd740" font-size="10" font-family="Rajdhani, sans-serif" font-weight="700">Spring /</text>
+        <text x="578" y="174" fill="#ffd740" font-size="10" font-family="Rajdhani, sans-serif" font-weight="700">Damper</text>
+
+        <!-- FORCE ARROWS -->
+        <!-- Vertical (down) -->
+        <line x1="700" y1="120" x2="700" y2="330" stroke="#00c8ff" stroke-width="2" marker-end="url(#arrow-cyan)" opacity="0.85"/>
+        <text x="716" y="230" fill="#00c8ff" font-size="10" font-family="Share Tech Mono, monospace">Fv</text>
+        <text x="716" y="244" fill="#7aa8cc" font-size="9" font-family="Share Tech Mono, monospace">(vertical)</text>
+
+        <!-- Braking (left arrow) -->
+        <line x1="800" y1="260" x2="650" y2="260" stroke="#ff7043" stroke-width="2" marker-end="url(#arrow-orange)" opacity="0.85"/>
+        <text x="726" y="280" fill="#ff7043" font-size="10" font-family="Share Tech Mono, monospace">Fb</text>
+        <text x="726" y="293" fill="#7aa8cc" font-size="9" font-family="Share Tech Mono, monospace">(braking)</text>
+
+        <!-- Cornering (diagonal) -->
+        <line x1="840" y1="170" x2="720" y2="230" stroke="#b04fff" stroke-width="2" marker-end="url(#arrow-purple)" opacity="0.85"/>
+        <text x="790" y="185" fill="#b04fff" font-size="10" font-family="Share Tech Mono, monospace">Fc</text>
+        <text x="790" y="198" fill="#7aa8cc" font-size="9" font-family="Share Tech Mono, monospace">(cornering)</text>
+
+        <!-- Legend box -->
+        <rect x="20" y="345" width="200" height="82" rx="6" fill="rgba(8,20,40,0.9)" stroke="#1a3a5c" stroke-width="1"/>
+        <text x="30" y="363" fill="#7aa8cc" font-size="10" font-family="Rajdhani, sans-serif" font-weight="700">LEGEND</text>
+        <circle cx="32" cy="378" r="4" fill="#00c8ff"/><text x="44" y="382" fill="#7aa8cc" font-size="9.5" font-family="Rajdhani, sans-serif">Upper Control Arm</text>
+        <circle cx="32" cy="394" r="4" fill="#1a6bff"/><text x="44" y="398" fill="#7aa8cc" font-size="9.5" font-family="Rajdhani, sans-serif">Lower Control Arm</text>
+        <circle cx="32" cy="410" r="4" fill="#00e5a0"/><text x="44" y="414" fill="#7aa8cc" font-size="9.5" font-family="Rajdhani, sans-serif">Trailing Arm</text>
+        <circle cx="120" cy="378" r="4" fill="#ff7043"/><text x="132" y="382" fill="#7aa8cc" font-size="9.5" font-family="Rajdhani, sans-serif">Toe Link</text>
+        <circle cx="120" cy="394" r="4" fill="#ffd740"/><text x="132" y="398" fill="#7aa8cc" font-size="9.5" font-family="Rajdhani, sans-serif">Spring/Damper</text>
+
+        <!-- Title watermark -->
+        <text x="450" y="425" fill="rgba(0,200,255,0.06)" font-size="28" text-anchor="middle" font-family="Rajdhani, sans-serif" font-weight="900">MULTI-LINK SUSPENSION</text>
+      </svg>
+    </div>
+  </section>
+
+  <hr class="section-divider">
+
+  <!-- ═══ SIMULATION ═══ -->
+  <section id="simulation">
+    <div class="section-label">02 — Force Input</div>
+    <div class="section-title">Load Input Panel</div>
+
+    <div class="grid-2">
+      <!-- Sliders -->
+      <div class="card">
+        <div style="font-family:'Rajdhani',sans-serif;font-weight:700;font-size:1rem;margin-bottom:1.25rem;color:var(--text-secondary);letter-spacing:1px;">INPUT FORCE COMPONENTS</div>
+
+        <div class="input-group">
+          <div class="input-label">
+            <span>🔽 Vertical Load <span style="font-size:0.72rem;color:var(--text-muted)">(Fv)</span></span>
+            <span class="input-value" id="fv-val">3000 N</span>
+          </div>
+          <div class="slider-track">
+            <div class="slider-fill fill-vertical" id="fv-fill" style="width:60%"></div>
+            <input type="range" id="fv" min="500" max="5000" value="3000" step="50" oninput="updateSlider('fv',this.value,'N')">
+          </div>
+          <div style="display:flex;justify-content:space-between;font-size:0.68rem;color:var(--text-muted);font-family:'Share Tech Mono',monospace;margin-top:2px"><span>500N</span><span>5000N</span></div>
+        </div>
+
+        <div class="input-group">
+          <div class="input-label">
+            <span>⬅ Braking Force <span style="font-size:0.72rem;color:var(--text-muted)">(Fb)</span></span>
+            <span class="input-value" id="fb-val">1200 N</span>
+          </div>
+          <div class="slider-track">
+            <div class="slider-fill fill-braking" id="fb-fill" style="width:24%"></div>
+            <input type="range" id="fb" min="0" max="5000" value="1200" step="50" oninput="updateSlider('fb',this.value,'N')">
+          </div>
+          <div style="display:flex;justify-content:space-between;font-size:0.68rem;color:var(--text-muted);font-family:'Share Tech Mono',monospace;margin-top:2px"><span>0N</span><span>5000N</span></div>
+        </div>
+
+        <div class="input-group">
+          <div class="input-label">
+            <span>↗ Cornering Force <span style="font-size:0.72rem;color:var(--text-muted)">(Fc)</span></span>
+            <span class="input-value" id="fc-val">800 N</span>
+          </div>
+          <div class="slider-track">
+            <div class="slider-fill fill-cornering" id="fc-fill" style="width:16%"></div>
+            <input type="range" id="fc" min="0" max="5000" value="800" step="50" oninput="updateSlider('fc',this.value,'N')">
+          </div>
+          <div style="display:flex;justify-content:space-between;font-size:0.68rem;color:var(--text-muted);font-family:'Share Tech Mono',monospace;margin-top:2px"><span>0N</span><span>5000N</span></div>
+        </div>
+
+        <button class="run-btn" onclick="runSimulation()">▶ Run Simulation</button>
+      </div>
+
+      <!-- Info + console -->
+      <div style="display:flex;flex-direction:column;gap:1rem;">
+        <div class="card" style="flex:1">
+          <div style="font-family:'Rajdhani',sans-serif;font-weight:700;font-size:1rem;margin-bottom:1rem;color:var(--text-secondary);letter-spacing:1px;">SYSTEM PARAMETERS</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;">
+            <div style="background:var(--bg-surface);border:1px solid var(--border);border-radius:6px;padding:0.75rem;text-align:center">
+              <div style="font-family:'Share Tech Mono',monospace;font-size:0.7rem;color:var(--text-muted);margin-bottom:4px">DOF</div>
+              <div style="font-family:'Share Tech Mono',monospace;font-size:1.1rem;color:var(--accent-cyan)">3</div>
+            </div>
+            <div style="background:var(--bg-surface);border:1px solid var(--border);border-radius:6px;padding:0.75rem;text-align:center">
+              <div style="font-family:'Share Tech Mono',monospace;font-size:0.7rem;color:var(--text-muted);margin-bottom:4px">LINKS</div>
+              <div style="font-family:'Share Tech Mono',monospace;font-size:1.1rem;color:var(--accent-cyan)">5</div>
+            </div>
+            <div style="background:var(--bg-surface);border:1px solid var(--border);border-radius:6px;padding:0.75rem;text-align:center">
+              <div style="font-family:'Share Tech Mono',monospace;font-size:0.7rem;color:var(--text-muted);margin-bottom:4px">METHOD</div>
+              <div style="font-family:'Share Tech Mono',monospace;font-size:0.9rem;color:var(--accent-cyan)">F=A×T</div>
+            </div>
+            <div style="background:var(--bg-surface);border:1px solid var(--border);border-radius:6px;padding:0.75rem;text-align:center">
+              <div style="font-family:'Share Tech Mono',monospace;font-size:0.7rem;color:var(--text-muted);margin-bottom:4px">STATUS</div>
+              <div style="font-family:'Share Tech Mono',monospace;font-size:0.9rem;color:var(--accent-green)" id="sim-status">READY</div>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div style="font-family:'Rajdhani',sans-serif;font-weight:700;font-size:0.85rem;margin-bottom:0.75rem;color:var(--text-muted);letter-spacing:1px;">SYSTEM LOG</div>
+          <div class="console-log" id="console-log">
+            <div class="log-line"><span>[INIT]</span> Suspension Force Analyzer loaded.</div>
+            <div class="log-line"><span>[SYS]</span> 5 links registered: UCA, LCA, TA, TL, SD</div>
+            <div class="log-line"><span>[SYS]</span> Compliance matrix A (5×3) initialized.</div>
+            <div class="log-info"><span>[INFO]</span> Adjust sliders and press Run Simulation.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <hr class="section-divider">
+
+  <!-- ═══ RESULTS ═══ -->
+  <section id="results">
+    <div class="section-label">03 — Matrix Calculation</div>
+    <div class="section-title">Force Distribution Results</div>
+
+    <!-- Formula -->
+    <div class="card mb">
+      <div class="formula-display">F_link = [A] × {T} &nbsp;|&nbsp; {T} = [Fv, Fb, Fc]ᵀ</div>
+      <p style="font-size:0.82rem;color:var(--text-secondary);text-align:center;line-height:1.6">
+        Where <strong style="color:var(--accent-cyan)">A</strong> is the (5×3) compliance coefficient matrix mapping each input force to a link,
+        and <strong style="color:var(--accent-cyan)">T</strong> is the input force vector. Each row of <strong style="color:var(--accent-cyan)">A</strong> represents a link's sensitivity coefficients.
+      </p>
+    </div>
+
+    <!-- Matrix Display -->
+    <div class="card mb" style="overflow-x:auto">
+      <div class="matrix-wrapper">
+        <!-- F vector -->
+        <div class="matrix-box">
+          <div class="matrix-label">F (Link Forces)</div>
+          <div class="matrix-bracket">
+            <div class="bracket-left">[</div>
+            <div class="matrix-grid" id="f-matrix" style="grid-template-columns: 1fr">
+              <div class="matrix-cell" id="fm-0">—</div>
+              <div class="matrix-cell" id="fm-1">—</div>
+              <div class="matrix-cell" id="fm-2">—</div>
+              <div class="matrix-cell" id="fm-3">—</div>
+              <div class="matrix-cell" id="fm-4">—</div>
+            </div>
+            <div class="bracket-right">]</div>
+          </div>
+          <div style="text-align:center;font-size:0.65rem;color:var(--text-muted);margin-top:4px;font-family:'Share Tech Mono',monospace">5×1 (N)</div>
+        </div>
+
+        <div class="op-symbol">=</div>
+
+        <!-- A matrix -->
+        <div class="matrix-box">
+          <div class="matrix-label">A (Compliance Matrix)</div>
+          <div class="matrix-bracket">
+            <div class="bracket-left">[</div>
+            <div class="matrix-grid" style="grid-template-columns:repeat(3,1fr)" id="a-matrix">
+              <!-- filled by JS -->
+            </div>
+            <div class="bracket-right">]</div>
+          </div>
+          <div style="text-align:center;font-size:0.65rem;color:var(--text-muted);margin-top:4px;font-family:'Share Tech Mono',monospace">5×3</div>
+        </div>
+
+        <div class="op-symbol">×</div>
+
+        <!-- T vector -->
+        <div class="matrix-box">
+          <div class="matrix-label">T (Input Forces)</div>
+          <div class="matrix-bracket">
+            <div class="bracket-left">[</div>
+            <div class="matrix-grid" id="t-matrix" style="grid-template-columns:1fr">
+              <div class="matrix-cell highlight" id="tm-0">3000</div>
+              <div class="matrix-cell highlight" id="tm-1">1200</div>
+              <div class="matrix-cell highlight" id="tm-2">800</div>
+            </div>
+            <div class="bracket-right">]</div>
+          </div>
+          <div style="text-align:center;font-size:0.65rem;color:var(--text-muted);margin-top:4px;font-family:'Share Tech Mono',monospace">3×1 (N)</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Results bars -->
+    <div class="card mb">
+      <div style="font-family:'Rajdhani',sans-serif;font-weight:700;font-size:1rem;margin-bottom:1.25rem;color:var(--text-secondary);letter-spacing:1px;">LINK FORCE DISTRIBUTION</div>
+      <div class="results-grid" id="results-grid">
+        <div class="result-item">
+          <div class="result-name">Upper Control Arm (UCA)</div>
+          <div class="result-bar-bg"><div class="result-bar-fill link-color-uca" id="bar-0" style="width:0%"></div></div>
+          <div class="result-value"><span class="result-num" id="val-0">— N</span><span class="result-pct" id="pct-0">0%</span></div>
+        </div>
+        <div class="result-item">
+          <div class="result-name">Lower Control Arm (LCA)</div>
+          <div class="result-bar-bg"><div class="result-bar-fill link-color-lca" id="bar-1" style="width:0%"></div></div>
+          <div class="result-value"><span class="result-num" id="val-1">— N</span><span class="result-pct" id="pct-1">0%</span></div>
+        </div>
+        <div class="result-item">
+          <div class="result-name">Trailing Arm (TA)</div>
+          <div class="result-bar-bg"><div class="result-bar-fill link-color-trail" id="bar-2" style="width:0%"></div></div>
+          <div class="result-value"><span class="result-num" id="val-2">— N</span><span class="result-pct" id="pct-2">0%</span></div>
+        </div>
+        <div class="result-item">
+          <div class="result-name">Toe Link (TL)</div>
+          <div class="result-bar-bg"><div class="result-bar-fill link-color-toe" id="bar-3" style="width:0%"></div></div>
+          <div class="result-value"><span class="result-num" id="val-3">— N</span><span class="result-pct" id="pct-3">0%</span></div>
+        </div>
+        <div class="result-item" style="grid-column:span 2">
+          <div class="result-name">Spring / Damper (SD)</div>
+          <div class="result-bar-bg"><div class="result-bar-fill link-color-hub" id="bar-4" style="width:0%"></div></div>
+          <div class="result-value"><span class="result-num" id="val-4">— N</span><span class="result-pct" id="pct-4">0%</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <hr class="section-divider">
+
+  <!-- ═══ APPLICATIONS ═══ -->
+  <section id="applications">
+    <div class="section-label">04 — Engineering Context</div>
+    <div class="section-title">Applications</div>
+
+    <div class="grid-3">
+      <div class="app-card">
+        <div class="app-icon" style="background:rgba(0,200,255,0.1);border:1px solid rgba(0,200,255,0.3)">🚗</div>
+        <h3>Automotive Engineering</h3>
+        <p>Matrix-based force analysis is used by OEMs like Toyota, BMW, and Ferrari during chassis development to ensure suspension links remain within their rated load limits under combined cornering, braking, and bump inputs simultaneously.</p>
+      </div>
+      <div class="app-card">
+        <div class="app-icon" style="background:rgba(0,229,160,0.1);border:1px solid rgba(0,229,160,0.3)">⚙</div>
+        <h3>Suspension Design</h3>
+        <p>Enables engineers to optimize link geometry and cross-sections for minimum weight while meeting structural targets. Compliance matrices help predict how each link reacts to road disturbances before physical prototypes are built.</p>
+      </div>
+      <div class="app-card">
+        <div class="app-icon" style="background:rgba(255,215,64,0.1);border:1px solid rgba(255,215,64,0.3)">📊</div>
+        <h3>Vehicle Dynamics</h3>
+        <p>Used in full-vehicle simulation environments (ADAMS, CarSim) to integrate suspension flexibility into handling predictions. Matrix methods allow real-time force distribution computation in HIL and SIL testing rigs.</p>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<!-- ═══════════ FOOTER ═══════════ -->
+<footer>
+  <div class="footer-inner">
+    <div class="footer-project">
+      <h3>Project Details</h3>
+      <div class="footer-detail">
+        <div><strong>STUDENT</strong>Mechanical Engineering Student</div>
+        <div><strong>COURSE</strong>Theory of Machines / Vehicle Dynamics</div>
+        <div><strong>COLLEGE</strong>Institute of Technology</div>
+        <div><strong>YEAR</strong>2024 – 2025</div>
+      </div>
+    </div>
+    <div class="footer-center">
+      <div style="font-size:1.5rem;margin-bottom:0.5rem">⚙</div>
+      <div>SuspensionMatrix v2.1</div>
+      <div style="color:rgba(61,96,128,0.7);margin-top:4px">Micro Project · Mech Engg</div>
+      <div style="margin-top:8px;padding:4px 12px;border:1px solid var(--border);border-radius:20px;font-size:0.65rem;color:var(--accent-green)">● PROTOTYPE MODE</div>
+    </div>
+    <div class="footer-right">
+      <div style="color:var(--accent-cyan);margin-bottom:8px">F = A × T</div>
+      <div>Matrix Force Analysis</div>
+      <div>5-Link Suspension Model</div>
+      <div>3-DOF Load Inputs</div>
+      <div style="margin-top:8px;color:rgba(61,96,128,0.6);font-size:0.65rem">Built for academic demonstration</div>
+    </div>
+  </div>
+</footer>
+
+<script>
+  // ─── COMPLIANCE MATRIX A (5×3) ───────────────────────────────
+  // Rows: UCA, LCA, TA, ToeLink, SpringDamper
+  // Cols: Fv, Fb, Fc
+  // Coefficients represent load-sharing fractions (simplified model)
+  const A = [
+    [0.28,  0.12,  0.35],   // UCA
+    [0.35,  0.18,  0.25],   // LCA
+    [0.15,  0.42,  0.10],   // Trailing Arm
+    [0.07,  0.20,  0.22],   // Toe Link
+    [0.15,  0.08,  0.08],   // Spring/Damper
+  ];
+
+  const linkNames = ['UCA','LCA','TA','TL','SD'];
+
+  // ─── INIT MATRIX DISPLAY ─────────────────────────────────────
+  function initAMatrix() {
+    const container = document.getElementById('a-matrix');
+    A.forEach(row => {
+      row.forEach(val => {
+        const cell = document.createElement('div');
+        cell.className = 'matrix-cell';
+        cell.textContent = val.toFixed(2);
+        container.appendChild(cell);
+      });
+    });
+  }
+
+  // ─── SLIDER UPDATE ───────────────────────────────────────────
+  function updateSlider(id, value, unit) {
+    document.getElementById(`${id}-val`).textContent = `${value} ${unit}`;
+    const el = document.getElementById(id);
+    const min = parseFloat(el.min), max = parseFloat(el.max);
+    const pct = ((value - min) / (max - min)) * 100;
+    document.getElementById(`${id}-fill`).style.width = pct + '%';
+
+    // live-update T matrix
+    const vals = getInputs();
+    document.getElementById('tm-0').textContent = vals[0];
+    document.getElementById('tm-1').textContent = vals[1];
+    document.getElementById('tm-2').textContent = vals[2];
+    document.getElementById('stat-total').textContent =
+      Math.round(Math.sqrt(vals[0]**2 + vals[1]**2 + vals[2]**2)) + ' N';
+  }
+
+  function getInputs() {
+    return [
+      parseFloat(document.getElementById('fv').value),
+      parseFloat(document.getElementById('fb').value),
+      parseFloat(document.getElementById('fc').value),
+    ];
+  }
+
+  // ─── MATRIX MULTIPLY ─────────────────────────────────────────
+  function matMul(A, T) {
+    return A.map(row => row.reduce((sum, a, i) => sum + a * T[i], 0));
+  }
+
+  // ─── LOG ─────────────────────────────────────────────────────
+  function log(msg, type='line') {
+    const log = document.getElementById('console-log');
+    const d = document.createElement('div');
+    d.className = `log-${type}`;
+    d.innerHTML = msg;
+    log.appendChild(d);
+    log.scrollTop = log.scrollHeight;
+  }
+
+  // ─── RUN SIMULATION ──────────────────────────────────────────
+  function runSimulation() {
+    const T = getInputs();
+    const F = matMul(A, T);
+    const maxF = Math.max(...F);
+    const totalF = F.reduce((a,b) => a+b, 0);
+
+    // Status
+    document.getElementById('sim-status').textContent = 'RUNNING';
+    document.getElementById('sim-status').style.color = 'var(--accent-yellow)';
+
+    // Scanning animation on diagram
+    const diagCard = document.querySelector('.diagram-container');
+    diagCard.classList.add('scanning');
+    setTimeout(() => diagCard.classList.remove('scanning'), 900);
+
+    log(`<span>[RUN]</span> Simulation started — T = [${T.map(v=>v+'N').join(', ')}]`, 'info');
+    log(`<span>[CALC]</span> Applying compliance matrix A (5×3) × T (3×1) ...`);
+
+    setTimeout(() => {
+      // Update result bars and values
+      F.forEach((f, i) => {
+        const pct = Math.round((f / maxF) * 100);
+        const sharePct = Math.round((f / totalF) * 100);
+        document.getElementById(`bar-${i}`).style.width = pct + '%';
+        document.getElementById(`val-${i}`).textContent = Math.round(f) + ' N';
+        document.getElementById(`pct-${i}`).textContent = sharePct + '%';
+      });
+
+      // Update F matrix
+      F.forEach((f, i) => {
+        const cell = document.getElementById(`fm-${i}`);
+        cell.textContent = Math.round(f) + ' N';
+        cell.classList.add('highlight');
+      });
+
+      // Update stat
+      document.getElementById('stat-total').textContent =
+        Math.round(Math.sqrt(T[0]**2 + T[1]**2 + T[2]**2)) + ' N';
+
+      document.getElementById('sim-status').textContent = 'DONE';
+      document.getElementById('sim-status').style.color = 'var(--accent-green)';
+
+      log(`<span>[RESULT]</span> UCA=${Math.round(F[0])}N | LCA=${Math.round(F[1])}N | TA=${Math.round(F[2])}N | TL=${Math.round(F[3])}N | SD=${Math.round(F[4])}N`, 'info');
+      log(`<span>[OK]</span> Simulation complete. Max link force: ${linkNames[F.indexOf(maxF)]} @ ${Math.round(maxF)}N`);
+    }, 600);
+  }
+
+  // ─── INIT ─────────────────────────────────────────────────────
+  initAMatrix();
+  updateSlider('fv', 3000, 'N');
+  updateSlider('fb', 1200, 'N');
+  updateSlider('fc', 800, 'N');
+
+  // Active nav on scroll
+  const sections = ['home','system','simulation','results','applications'];
+  window.addEventListener('scroll', () => {
+    let current = 'home';
+    sections.forEach(id => {
+      const el = document.getElementById(id);
+      if (el && window.scrollY >= el.offsetTop - 120) current = id;
+    });
+    document.querySelectorAll('nav a').forEach(a => {
+      a.classList.toggle('active', a.getAttribute('href') === '#' + current);
+    });
+  });
+</script>
+</body>
+</html>
