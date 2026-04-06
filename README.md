@@ -29,20 +29,24 @@ Represent the system using matrix equations:
 F=K⋅x
 Combine individual link matrices into a global stiffness matrix
 Solve for displacement using matrix operations
-🧮 Key Concepts
+
+🧮 Key Concepts:
 Matrix Algebra
 Force & Displacement Vectors
 Stiffness Matrix
 System Modeling
-💻 Implementation
+
+💻 Implementation:
 MATLAB for numerical computation
 Python (optional) for simulation & visualization
 Basic linear algebra operations for solving equations
-🚀 Features
+
+🚀 Features:
 Simple and efficient matrix-based approach
 Scalable for complex suspension systems
 Easy to extend with GUI or simulations
-📊 Applications
+
+📊 Applications:
 Vehicle suspension design
 Ride comfort analysis
 Stability and handling evaluation
