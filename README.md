@@ -59,4 +59,4 @@ Mechanical system modeling
 
 This project demonstrates how matrix methods can simplify the analysis of complex mechanical systems like multi-link suspensions, making it easier to study force distribution and system behavior.
 
-✨ A simple step towards combining mechanical engineering with computational methods!
+✨ A simple step towards combining mechanical engineering with computational methods!!
