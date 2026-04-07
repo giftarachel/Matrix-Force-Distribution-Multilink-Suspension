@@ -1,0 +1,103 @@
+{
+  "users": [
+    {
+      "username": "gifta",
+      "email": "",
+      "password": "ddcb60ec988e8d8cdba675a5164ca2b4:93ee6630206715f80531f1374ee98d8379bb66aa1c389dab1c0abb57ebf1b82d",
+      "created_at": "2026-04-06T04:11:49.764565+00:00",
+      "_id": "16794ac9-a53d-4187-9de4-18ea12b1e64e"
+    },
+    {
+      "username": "gif",
+      "email": "gifta@gmail.com",
+      "password": "cd2462ea981f9b9fc2cb11d611fc29c7:b70a09a0a069770d7f90bb16811da4f62e51362b1c5f73b7ec5d6bf74bd37195",
+      "created_at": "2026-04-06T04:13:45.998718+00:00",
+      "_id": "2e6f7919-9d7a-44d9-8b35-8b31e397ff79"
+    },
+    {
+      "username": "nabajit",
+      "email": "nabajitbiswas63@gmail.com",
+      "password": "782d6424b5aa43bbe5b3622e90739582:cc2bb2da81d456ecd3421c7b7d5023a310986d73a731cbd460342823e3815fea",
+      "created_at": "2026-04-06T04:16:23.498113+00:00",
+      "_id": "9203b055-e4ef-45e9-82a6-ff524bbc61e1"
+    }
+  ],
+  "simulations": [
+    {
+      "user_id": "2e6f7919-9d7a-44d9-8b35-8b31e397ff79",
+      "links": [
+        {
+          "angle": 45,
+          "length": 300
+        },
+        {
+          "angle": 90,
+          "length": 200
+        }
+      ],
+      "external_force": 1000.0,
+      "force_type": "bump",
+      "results": [
+        -8.659560562354933e-14,
+        1000.0000000000001
+      ],
+      "direction_cosine_matrix": [
+        [
+          0.7071067811865476,
+          6.123233995736766e-17
+        ],
+        [
+          0.7071067811865476,
+          1.0
+        ]
+      ],
+      "external_force_vector": [
+        0.0,
+        1000.0
+      ],
+      "method": "matrix_inverse",
+      "residual": 0.0,
+      "max_stress_link": 1,
+      "timestamp": "2026-04-06T04:15:11.810102+00:00",
+      "_id": "e559cf20-11cb-4219-9290-6f8946952806"
+    },
+    {
+      "user_id": "9203b055-e4ef-45e9-82a6-ff524bbc61e1",
+      "links": [
+        {
+          "angle": 45,
+          "length": 300
+        },
+        {
+          "angle": 180,
+          "length": 200
+        }
+      ],
+      "external_force": 1000.0,
+      "force_type": "bump",
+      "results": [
+        1414.2135623730946,
+        999.9999999999998
+      ],
+      "direction_cosine_matrix": [
+        [
+          0.7071067811865476,
+          -1.0
+        ],
+        [
+          0.7071067811865476,
+          1.2246467991473532e-16
+        ]
+      ],
+      "external_force_vector": [
+        0.0,
+        1000.0
+      ],
+      "method": "matrix_inverse",
+      "residual": 0.0,
+      "max_stress_link": 0,
+      "timestamp": "2026-04-06T04:16:48.572036+00:00",
+      "_id": "0ef1d037-5a1d-43ea-b177-b465a0b408eb"
+    }
+  ]
+}
