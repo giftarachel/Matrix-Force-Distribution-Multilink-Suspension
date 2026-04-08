@@ -51,6 +51,7 @@ Vehicle suspension design
 Ride comfort analysis
 Stability and handling evaluation
 Mechanical system modeling
+
 📁 Project Structure
 ├── index.html (optional UI)
 ├── simulation code (MATLAB/Python)
