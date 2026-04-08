@@ -46,6 +46,7 @@ def resolve_external_force(magnitude: float, force_type: str) -> np.ndarray:
         return np.array([0.0, magnitude])
 
 
+
 def solve_force_distribution(angles_deg: list[float], magnitude: float, force_type: str) -> dict:
     """
     Main solver: builds A, resolves F, solves A·T = F.
@@ -78,6 +79,7 @@ def solve_force_distribution(angles_deg: list[float], magnitude: float, force_ty
         T, _, _, _ = np.linalg.lstsq(A, F, rcond=None)
         method = "least_squares"
 
+  
     # Compute residual (equilibrium check)
     residual = np.linalg.norm(A @ T - F)
 
