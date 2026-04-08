@@ -3,6 +3,7 @@ Auth routes: POST /api/register, POST /api/login
 Passwords hashed with bcrypt. JWT tokens for session.
 """
 
+
 from flask import Blueprint, request, jsonify
 from db import get_db
 from datetime import datetime, timezone, timedelta
@@ -53,6 +54,7 @@ def verify_token(token: str):
         return payload
     except Exception:
         return None
+
 
 
 @auth_bp.route("/register", methods=["POST"])
