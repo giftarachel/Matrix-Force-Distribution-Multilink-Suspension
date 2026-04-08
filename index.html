@@ -10,6 +10,7 @@
 </head>
 <body>
 
+  
   <!-- ===== AUTH OVERLAY ===== -->
   <div id="auth-overlay" class="auth-overlay">
     <div class="auth-box">
@@ -28,6 +29,7 @@
         </div>
       </div>
 
+      
       <!-- Tab switcher -->
       <div class="auth-tabs">
         <button class="auth-tab active" id="tab-login-btn" onclick="switchAuthTab('login')">Sign In</button>
@@ -49,6 +51,7 @@
         <p class="auth-switch">No account? <a href="#" onclick="switchAuthTab('signup')">Sign up free</a></p>
       </form>
 
+      
       <!-- SIGNUP -->
       <form id="signup-form" class="auth-form hidden" onsubmit="doSignup(event)">
         <div class="auth-field">
@@ -70,6 +73,7 @@
     </div>
   </div>
 
+  
   <!-- ===== MAIN APP ===== -->
   <div id="app" class="hidden">
 
@@ -98,8 +102,10 @@
         </nav>
 
         <div class="header-right">
+          
           <!-- Theme Toggle -->
           <button class="theme-toggle" onclick="toggleTheme()" title="Toggle theme" id="theme-btn">🌙</button>
+          
           <!-- User -->
           <div class="user-pill">
             <span class="user-avatar" id="user-avatar">U</span>
@@ -112,6 +118,7 @@
 
     <main class="main">
 
+      
       <!-- ===== BUILDER TAB ===== -->
       <div id="tab-builder" class="tab active">
         <div class="page-title">
@@ -190,6 +197,7 @@
         </section>
       </div>
 
+      
       <!-- ===== RESULTS TAB ===== -->
       <div id="tab-results" class="tab">
         <div id="no-results" class="empty-state">
@@ -238,6 +246,7 @@
         </div>
       </div>
 
+      
       <!-- ===== HISTORY TAB ===== -->
       <div id="tab-history" class="tab">
         <div class="page-title">
@@ -253,6 +262,7 @@
     </main>
   </div>
 
+  
   <!-- ===== AI CHATBOT ===== -->
   <div id="chatbot-bubble" class="hidden" onclick="toggleChat()">💬</div>
   <div id="chatbot-panel" class="chatbot-panel hidden">
