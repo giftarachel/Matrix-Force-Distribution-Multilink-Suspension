@@ -13,7 +13,6 @@ auth_bp = Blueprint("auth", __name__)
 
 SECRET = os.getenv("JWT_SECRET", "suspension_sim_secret_2026")
 
-
 def hash_password(pw: str) -> str:
     salt = os.urandom(16).hex()
     h = hashlib.sha256((salt + pw).encode()).hexdigest()
