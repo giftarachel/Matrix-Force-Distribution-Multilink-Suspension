@@ -14,6 +14,7 @@ from datetime import datetime
 pdf_bp = Blueprint("pdf", __name__)
 
 
+
 @pdf_bp.route("/pdf", methods=["POST"])
 def generate_pdf():
     data = request.get_json()
@@ -49,6 +50,7 @@ def generate_pdf():
 
     story = []
 
+    
     # Title
     story.append(Paragraph("Matrix-Based Force Distribution", title_style))
     story.append(Paragraph("Multi-Link Suspension System — Simulation Report", sub_style))
@@ -56,6 +58,7 @@ def generate_pdf():
     story.append(HRFlowable(width="100%", thickness=1, color=colors.HexColor("#cbd5e1")))
     story.append(Spacer(1, 0.3*cm))
 
+    
     # Simulation Parameters
     story.append(Paragraph("Simulation Parameters", heading_style))
     params = [
@@ -79,12 +82,14 @@ def generate_pdf():
     story.append(t)
     story.append(Spacer(1, 0.4*cm))
 
+    
     # External Force Vector
     story.append(Paragraph("External Force Vector [Fx, Fy]", heading_style))
     fv_str = f"Fx = {fv[0]:.2f} N,  Fy = {fv[1]:.2f} N" if len(fv) >= 2 else "N/A"
     story.append(Paragraph(fv_str, body_style))
     story.append(Spacer(1, 0.3*cm))
 
+    
     # Direction Cosine Matrix
     if dcm:
         story.append(Paragraph("Direction Cosine Matrix (A)", heading_style))
@@ -110,6 +115,7 @@ def generate_pdf():
         story.append(dt)
         story.append(Spacer(1, 0.4*cm))
 
+    
     # Link Configuration & Results
     story.append(Paragraph("Link Configuration & Force Distribution (T = A⁻¹·F)", heading_style))
     link_header = ["Link #", "Angle (°)", "Length (mm)", "Force T (N)", "Status"]
@@ -137,6 +143,7 @@ def generate_pdf():
     story.append(lt)
     story.append(Spacer(1, 0.5*cm))
 
+    
     # Footer
     story.append(HRFlowable(width="100%", thickness=1, color=colors.HexColor("#cbd5e1")))
     story.append(Spacer(1, 0.2*cm))
