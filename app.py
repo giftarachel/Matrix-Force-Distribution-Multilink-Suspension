@@ -15,6 +15,7 @@ from db import init_db
 app = Flask(__name__)
 CORS(app)
 
+
 init_db()
 
 app.register_blueprint(simulate_bp, url_prefix="/api")
